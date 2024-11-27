@@ -1,0 +1,166 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Diagnostics Guide</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+        }
+        h1, h2 {
+            color: #2c3e50;
+            border-bottom: 2px solid #2c3e50;
+        }
+        h3 {
+            color: #2980b9;
+        }
+        pre {
+            background: #ecf0f1;
+            padding: 10px;
+            border-left: 4px solid #3498db;
+            overflow-x: auto;
+        }
+        code {
+            color: #c0392b;
+            font-weight: bold;
+        }
+        blockquote {
+            margin: 20px 0;
+            padding: 10px 20px;
+            background: #ecf0f1;
+            border-left: 4px solid #95a5a6;
+        }
+        .disclaimer {
+            color: #e74c3c;
+            font-weight: bold;
+            border: 1px solid #e74c3c;
+            padding: 10px;
+            margin: 20px 0;
+            background: #fbeaea;
+        }
+        ul {
+            list-style: square;
+            margin-left: 20px;
+        }
+        .donations {
+            color: #27ae60;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Step-by-Step Guide to Diagnose and Resolve Network Issues</h1>
+    <p>This guide provides a comprehensive process for diagnosing and resolving network issues, including steps to test, identify problems, and optimize settings for better performance. <strong>This guide was created by and is owned by NotABot.</strong> The example uses the IP <code>211.43.149.201</code> (NavyField server).</p>
+
+    <h2>1. Initial Tests</h2>
+    <h3>1.1 Perform a Pathping</h3>
+    <p>Pathping combines elements of <code>ping</code> and <code>tracert</code> to provide detailed hop information and packet loss.</p>
+    <pre><code>pathping 211.43.149.201</code></pre>
+    <p><strong>What to Look For:</strong></p>
+    <ul>
+        <li>Latency values (Round Trip Time or RTT).</li>
+        <li>Packet loss at any hop.</li>
+        <li>Timeouts (denoted by <code>* * *</code>).</li>
+    </ul>
+
+    <h3>1.2 Perform a Traceroute</h3>
+    <p>Traceroute (<code>tracert</code>) identifies the route packets take to the destination server.</p>
+    <pre><code>tracert 211.43.149.201</code></pre>
+    <p><strong>What to Look For:</strong></p>
+    <ul>
+        <li>Latency increases between hops.</li>
+        <li>Specific hops with high latency or timeouts.</li>
+    </ul>
+
+    <h3>1.3 Ping the Server with Multiple Packets</h3>
+    <p>Ping helps measure packet loss and latency consistency.</p>
+    <pre><code>ping 211.43.149.201 -n 50</code></pre>
+    <p><strong>What to Look For:</strong></p>
+    <ul>
+        <li>Consistency in RTT values.</li>
+        <li>Packet loss percentage.</li>
+    </ul>
+
+    <h3>1.4 Test Ping with Larger Packets</h3>
+    <p>Test how the network handles larger data packets to detect MTU issues.</p>
+    <pre><code>ping 211.43.149.201 -l 1500</code></pre>
+    <p>If it fails, reduce the packet size and re-test. For example:</p>
+    <pre><code>ping 211.43.149.201 -l 1400</code></pre>
+
+    <h3>1.5 Continuous Ping Test</h3>
+    <p>Monitor network stability over time.</p>
+    <pre><code>ping 211.43.149.201 -t</code></pre>
+    <p>To stop, press <code>Ctrl + C</code>.</p>
+    <p><strong>What to Look For:</strong></p>
+    <ul>
+        <li>Consistent RTT values.</li>
+        <li>No packet loss.</li>
+    </ul>
+
+    <h3>1.6 MTU Test</h3>
+    <p>Determine the largest packet size the network can handle without fragmentation.</p>
+    <pre><code>ping 211.43.149.201 -f -l &lt;size&gt;</code></pre>
+    <p>Start with a size (e.g., <code>1472</code>) and reduce until no fragmentation occurs. For example:</p>
+    <pre><code>ping 211.43.149.201 -f -l 1400</code></pre>
+
+    <h2>2. MTU Configuration</h2>
+    <h3>2.1 View Current MTU Settings</h3>
+    <p>Check the current MTU settings.</p>
+    <pre><code>netsh interface ipv4 show subinterfaces</code></pre>
+
+    <h3>2.2 Update MTU</h3>
+    <p>Set the MTU for the identified interface (e.g., <code>Wi-Fi</code>).</p>
+    <pre><code>netsh interface ipv4 set subinterface "Wi-Fi" mtu=&lt;MTU size&gt; store=persistent</code></pre>
+    <p>Replace <code>&lt;MTU size&gt;</code> with the identified MTU (e.g., <code>1428</code>).</p>
+
+    <h3>2.3 Verify MTU Settings</h3>
+    <p>Check that the changes were applied correctly.</p>
+    <pre><code>netsh interface ipv4 show subinterfaces</code></pre>
+
+    <h2>3. Validation Tests</h2>
+    <h3>3.1 Ping with Maximum Packet Size</h3>
+    <p>Test with the maximum allowable packet size to ensure no fragmentation.</p>
+    <pre><code>ping 211.43.149.201 -f -l 1400</code></pre>
+
+    <h2>4. Additional Diagnostics</h2>
+    <h3>4.1 DNS Lookup</h3>
+    <pre><code>nslookup 211.43.149.201</code></pre>
+
+    <h3>4.2 Network Statistics</h3>
+    <pre><code>netstat -e -s</code></pre>
+
+    <h3>4.3 View ARP Table</h3>
+    <pre><code>arp -a</code></pre>
+
+    <h2>5. Expected Improvements</h2>
+    <p>After completing the steps:</p>
+    <ul>
+        <li><strong>Reduced Lag:</strong> Optimized MTU reduces fragmentation-related delays.</li>
+        <li><strong>Improved Stability:</strong> Consistent packet delivery improves gameplay.</li>
+        <li><strong>Lower Latency Jitter:</strong> Fewer fluctuations in RTT values.</li>
+    </ul>
+
+    <h2>6. Troubleshooting Persistent Issues</h2>
+    <div class="disclaimer">
+        <p>This guide is provided as-is. NotABot is not responsible for any software or hardware damage that may occur as a result of following these instructions. Always take a screenshot or save your default settings before making changes so you can restore them if necessary.</p>
+    </div>
+    <p>If lag persists:</p>
+    <ul>
+        <li><strong>Check Router Settings:</strong> Ensure Quality of Service (QoS) prioritizes gaming traffic.</li>
+        <li><strong>Contact ISP:</strong> Share test results (e.g., pathping, traceroute) for further investigation.</li>
+        <li><strong>Switch to Ethernet:</strong> A wired connection can reduce interference and improve stability.</li>
+    </ul>
+
+    <div class="donations">
+        <p>If you found this guide helpful, consider making a donation. I dedicate significant time to diagnosing, troubleshooting, and creating these resources for free. Your support helps keep these efforts sustainable. Thank you!</p>
+    </div>
+</body>
+</html>
