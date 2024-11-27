@@ -1,0 +1,208 @@
+
+## Step-by-Step Guide to Diagnose and Resolve Network Issues
+
+This guide provides a comprehensive process for diagnosing and resolving network issues, including steps to test, identify problems, and optimize settings for better performance. This guide was created by and is owned by NotABot. The example uses the IP **211.43.149.201** (NavyField server).
+
+---
+
+### **1. Initial Tests**
+#### **1.1 Perform a Pathping**
+Pathping combines elements of `ping` and `tracert` to provide detailed hop information and packet loss.
+
+**Command:**
+```bash
+pathping 211.43.149.201
+```
+**What to Look For:**
+- Latency values (Round Trip Time or RTT).
+- Packet loss at any hop.
+- Timeouts (denoted by `* * *`).
+
+---
+
+#### **1.2 Perform a Traceroute**
+Traceroute (`tracert`) identifies the route packets take to the destination server.
+
+**Command:**
+```bash
+tracert 211.43.149.201
+```
+**What to Look For:**
+- Latency increases between hops.
+- Specific hops with high latency or timeouts.
+
+---
+
+#### **1.3 Ping the Server with Multiple Packets**
+Ping helps measure packet loss and latency consistency.
+
+**Command:**
+```bash
+ping 211.43.149.201 -n 50
+```
+**What to Look For:**
+- Consistency in RTT values.
+- Packet loss percentage.
+
+---
+
+#### **1.4 Test Ping with Larger Packets**
+Test how the network handles larger data packets to detect MTU issues.
+
+**Command:**
+```bash
+ping 211.43.149.201 -l 1500
+```
+If it fails, reduce the packet size and re-test. For example:
+```bash
+ping 211.43.149.201 -l 1400
+```
+
+---
+
+#### **1.5 Continuous Ping Test**
+Monitor network stability over time.
+
+**Command:**
+```bash
+ping 211.43.149.201 -t
+```
+To stop, press `Ctrl + C`.
+
+**What to Look For:**
+- Consistent RTT values.
+- No packet loss.
+
+---
+
+#### **1.6 MTU Test**
+Determine the largest packet size the network can handle without fragmentation.
+
+**Command:**
+```bash
+ping 211.43.149.201 -f -l <size>
+```
+- Start with a size (e.g., `1472`) and reduce until no fragmentation occurs.
+- For example:
+  ```bash
+  ping 211.43.149.201 -f -l 1400
+  ```
+  Continue adjusting until the highest successful value is found.
+
+---
+
+### **2. MTU Configuration**
+Once the MTU limit is identified, configure the system to avoid fragmentation.
+
+#### **2.1 View Current MTU Settings**
+**Command:**
+```bash
+netsh interface ipv4 show subinterfaces
+```
+**Example Output:**
+```
+MTU  MediaSenseState      Bytes In     Bytes Out  Interface
+1500                1      22072198       7335385  Wi-Fi
+```
+
+---
+
+#### **2.2 Update MTU**
+Set the MTU for the identified interface (e.g., `Wi-Fi`).
+
+**Command:**
+```bash
+netsh interface ipv4 set subinterface "Wi-Fi" mtu=<MTU size> store=persistent
+```
+- Replace `<MTU size>` with the identified MTU (e.g., `1428`).
+
+**Example:**
+```bash
+netsh interface ipv4 set subinterface "Wi-Fi" mtu=1428 store=persistent
+```
+
+---
+
+#### **2.3 Verify MTU Settings**
+Check that the changes were applied correctly.
+
+**Command:**
+```bash
+netsh interface ipv4 show subinterfaces
+```
+**Expected Output:**
+```
+MTU  MediaSenseState      Bytes In     Bytes Out  Interface
+1428                1      22204287       7451796  Wi-Fi
+```
+
+---
+
+### **3. Validation Tests**
+After applying MTU changes, verify the network's performance.
+
+#### **3.1 Ping with Maximum Packet Size**
+Test with the maximum allowable packet size to ensure no fragmentation.
+
+**Command:**
+```bash
+ping 211.43.149.201 -f -l 1400
+```
+**Expected Output:**
+- All packets should be received.
+- No fragmentation errors.
+
+---
+
+### **4. Additional Diagnostics**
+#### **4.1 DNS Lookup**
+Verify DNS resolution (optional if using IP directly).
+
+**Command:**
+```bash
+nslookup 211.43.149.201
+```
+
+#### **4.2 Network Statistics**
+View detailed statistics of sent/received packets.
+
+**Command:**
+```bash
+netstat -e -s
+```
+
+#### **4.3 View ARP Table**
+Inspect the ARP table for IP-to-MAC address mapping.
+
+**Command:**
+```bash
+arp -a
+```
+
+---
+
+### **5. Expected Improvements**
+After completing the steps:
+- **Reduced Lag**: Optimized MTU reduces fragmentation-related delays.
+- **Improved Stability**: Consistent packet delivery improves gameplay.
+- **Lower Latency Jitter**: Fewer fluctuations in RTT values.
+
+---
+
+### **6. Troubleshooting Persistent Issues**
+### Disclaimer
+This guide is provided as-is. NotABot is not responsible for any software or hardware damage that may occur as a result of following these instructions. Always take a screenshot or save your default settings before making changes so you can restore them if necessary.
+
+If lag persists:
+1. **Check Router Settings**: Ensure Quality of Service (QoS) prioritizes gaming traffic.
+2. **Contact ISP**: Share test results (e.g., pathping, traceroute) for further investigation.
+3. **Switch to Ethernet**: A wired connection can reduce interference and improve stability.
+
+---
+
+This guide covers all steps to diagnose, resolve, and optimize your network connection for the provided IP.
+
+---
+
+### Donations
+If you found this guide helpful, consider making a donation. I dedicate significant time to diagnosing, troubleshooting, and creating these resources for free. Your support helps keep these efforts sustainable. Thank you!
